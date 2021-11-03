@@ -2,7 +2,7 @@ import pygame
 import os
 import config
 from collections import deque
-import pprint
+from anytree import Node, findall
 
 
 class BaseSprite(pygame.sprite.Sprite):
@@ -121,6 +121,78 @@ class Aki(Agent):
             visited.append(minTile)
 
         return path
+
+
+class Jocke(Agent):
+    def __init__(self, row, col, file_name):
+        super().__init__(row, col, file_name)
+
+    def get_agent_path(self, game_map, goal):
+        first = game_map[self.row][self.col]
+        root = Node(str(first.position()))
+        path = [first]
+
+        row = self.row
+        col = self.col
+        visited = [first]
+        queue = deque()
+
+        current_neighbours = self.get_neighbours(row, col, game_map, visited)
+        cost_averages = []
+        for tile in current_neighbours:
+            average = self.get_neighbours_average_cost(game_map, tile)
+            cost_averages.append({'tile': tile, 'average': average})
+        cost_averages.sort(key=lambda key: key['average'])
+
+        for t in cost_averages:
+            Node(str(t['tile'].position()), parent=root)
+            queue.append(t['tile'])
+
+        current_node = None
+        while True:
+            curr = queue.popleft()
+            current_node = findall(root, filter_=lambda node: node.name == str(curr.position()))[0]
+            row, col = curr.position()
+
+            if row == goal[0] and col == goal[1]:
+                break
+
+            visited.append(game_map[row][col])
+            current_neighbours = self.get_neighbours(row, col, game_map, visited)
+
+            cost_averages = []
+            for tile in current_neighbours:
+                average = self.get_neighbours_average_cost(game_map, tile)
+                cost_averages.append({'tile': tile, 'average': average})
+            cost_averages.sort(key=lambda key: key['average'])
+
+            for t in cost_averages:
+                Node(str(t['tile'].position()), parent=current_node)
+                queue.append(t['tile'])
+
+        skip_first = True
+        for anc in current_node.ancestors:
+            if skip_first:
+                skip_first = False
+                continue
+            temp = anc.name.split("/")
+            positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
+            tile = game_map[positions[0]][positions[1]]
+            path.append(tile)
+
+        temp = current_node.name.split("/")
+        positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
+        tile = game_map[positions[0]][positions[1]]
+        path.append(tile)
+
+        return path
+
+    def get_neighbours_average_cost(self, game_map, current_tile):
+        neighbours = self.get_neighbours(current_tile.row, current_tile.col, game_map, [])
+        sum = 0
+        for tile in neighbours:
+            sum += tile.cost()
+        return sum // len(neighbours)
 
 
 class Tile(BaseSprite):

@@ -2,7 +2,8 @@ import pygame
 import os
 import config
 from collections import deque
-from anytree import Node, findall
+from anytree import Node, findall, RenderTree
+import numpy as np
 
 
 class BaseSprite(pygame.sprite.Sprite):
@@ -193,6 +194,69 @@ class Jocke(Agent):
         for tile in neighbours:
             sum += tile.cost()
         return sum // len(neighbours)
+
+
+class Draza(Agent):
+    def __init__(self, row, col, file_name):
+        super().__init__(row, col, file_name)
+
+    def get_agent_path(self, game_map, goal):
+        first = game_map[self.row][self.col]
+        root = Node(str(first.position()))
+        path = [first]
+
+        row = self.row
+        col = self.col
+        visited = [first]
+        queue = []
+
+        current_neighbours = self.get_neighbours(row, col, game_map, visited)
+        for t in current_neighbours:
+            Node(str(t.position()), parent=root)
+            queue.append({"tile": t, "cost": t.cost()})
+        queue.sort(key=lambda key: key["cost"])
+
+        current_node = None
+        final_node = None
+        final_node_cost = None
+        while True:
+            curr = queue.pop(0)
+            current_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
+            row, col = curr["tile"].position()
+
+            if row == goal[0] and col == goal[1]:
+                if final_node_cost is None or curr["cost"] < final_node_cost:
+                    final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
+                    final_node_cost = curr["cost"]
+
+            visited.append(game_map[row][col])
+            current_neighbours = self.get_neighbours(row, col, game_map, visited)
+            for t in current_neighbours:
+                Node(str(t.position()), parent=current_node)
+                queue.append({"tile": t, "cost": (t.cost() + curr["cost"])})
+            queue.sort(key=lambda key: key["cost"])
+
+            if len(queue) == 0:
+                break
+
+        print(RenderTree(root))
+
+        skip_first = True
+        for anc in final_node.ancestors:
+            if skip_first:
+                skip_first = False
+                continue
+            temp = anc.name.split("/")
+            positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
+            tile = game_map[positions[0]][positions[1]]
+            path.append(tile)
+
+        temp = final_node.name.split("/")
+        positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
+        tile = game_map[positions[0]][positions[1]]
+        path.append(tile)
+
+        return path
 
 
 class Tile(BaseSprite):

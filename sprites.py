@@ -141,7 +141,7 @@ class Jocke(Agent):
         current_neighbours = self.get_neighbours(row, col, game_map, visited)
         cost_averages = []
         for tile in current_neighbours:
-            average = self.get_neighbours_average_cost(game_map, tile)
+            average = self.get_neighbours_average_cost(game_map, tile, first)
             cost_averages.append({'tile': tile, 'average': average})
         cost_averages.sort(key=lambda key: key['average'])
 
@@ -163,7 +163,7 @@ class Jocke(Agent):
 
             cost_averages = []
             for tile in current_neighbours:
-                average = self.get_neighbours_average_cost(game_map, tile)
+                average = self.get_neighbours_average_cost(game_map, tile, curr)
                 cost_averages.append({'tile': tile, 'average': average})
             cost_averages.sort(key=lambda key: key['average'])
 
@@ -188,12 +188,12 @@ class Jocke(Agent):
 
         return path
 
-    def get_neighbours_average_cost(self, game_map, current_tile):
-        neighbours = self.get_neighbours(current_tile.row, current_tile.col, game_map, [current_tile])
-        sum = 0
+    def get_neighbours_average_cost(self, game_map, current_tile, previous_tile):
+        neighbours = self.get_neighbours(current_tile.row, current_tile.col, game_map, [previous_tile])
+        sum = 0.
         for tile in neighbours:
             sum += tile.cost()
-        return sum // len(neighbours)
+        return sum / len(neighbours)
 
 
 class Draza(Agent):

@@ -204,6 +204,7 @@ class Draza(Agent):
         first = game_map[self.row][self.col]
         root = Node(str(first.position()))
         path = [first]
+        tile_costs = {first.position(): first.cost()}
 
         row = self.row
         col = self.col
@@ -212,8 +213,9 @@ class Draza(Agent):
 
         current_neighbours = self.get_neighbours(row, col, game_map, visited)
         for t in current_neighbours:
-            Node(str(t.position()) + str(t.cost()), parent=root)
+            Node(str(t.position()), parent=root)
             queue.append({"tile": t, "cost": t.cost()})
+            tile_costs[t.position()] = t.cost()
         queue.sort(key=lambda key: key["cost"])
 
         current_node = None
@@ -221,28 +223,28 @@ class Draza(Agent):
         final_node_cost = None
         while True:
             curr = queue.pop(0)
-            temp = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()) + str(curr["cost"]))
-            current_node = temp[0]
+            current_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
             row, col = curr["tile"].position()
 
             if row == goal[0] and col == goal[1]:
                 if final_node_cost is None or curr["cost"] < final_node_cost:
-                    final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()) + str(curr["cost"]))[0]
+                    final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
                     final_node_cost = curr["cost"]
                 elif final_node_cost is None or curr["cost"] == final_node_cost and len(final_node.ancestors) > len(current_node.ancestors):
-                    final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()) + str(curr["cost"]))[0]
+                    final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
                     final_node_cost = curr["cost"]
 
             visited.append(game_map[row][col])
             current_neighbours = self.get_neighbours(row, col, game_map, visited)
             for t in current_neighbours:
-                if t.cost() + curr["cost"] == 6:
-                    print(t)
-                temp = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()) + str(curr["tile"].cost() + curr["cost"]))
-                if len(temp) > 0:
-                    print(temp)
-                Node(str(t.position()) + str(t.cost() + curr["cost"]), parent=current_node)
-                queue.append({"tile": t, "cost": (t.cost() + curr["cost"])})
+                if t.position() not in tile_costs:
+                    Node(str(t.position()), parent=current_node)
+                    queue.append({"tile": t, "cost": (t.cost() + curr["cost"])})
+                    tile_costs[t.position()] = t.cost() + curr["cost"]
+                elif t.cost() + curr["cost"] < tile_costs[t.position()]:
+                    node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
+                    node.parent = current_node
+                    tile_costs[t.position()] = t.cost() + curr["cost"]
             queue.sort(key=lambda key: key["cost"])
 
             if len(queue) == 0:
@@ -274,6 +276,7 @@ class Bole(Agent):
         first = game_map[self.row][self.col]
         root = Node(str(first.position()))
         path = [first]
+        tile_costs = {first.position(): first.cost()}
 
         row = self.row
         col = self.col
@@ -284,6 +287,7 @@ class Bole(Agent):
         for t in current_neighbours:
             Node(str(t.position()), parent=root)
             queue.append({"tile": t, "cost": (t.cost() + self.get_tile_heuristics(t, goal))})
+            tile_costs[t.position()] = t.cost() + self.get_tile_heuristics(t, goal)
         queue.sort(key=lambda key: key["cost"])
 
         current_node = None
@@ -302,8 +306,14 @@ class Bole(Agent):
             visited.append(game_map[row][col])
             current_neighbours = self.get_neighbours(row, col, game_map, visited)
             for t in current_neighbours:
-                Node(str(t.position()), parent=current_node)
-                queue.append({"tile": t, "cost": (t.cost() + curr["cost"] + self.get_tile_heuristics(t, goal))})
+                if t.position() not in tile_costs:
+                    Node(str(t.position()), parent=current_node)
+                    queue.append({"tile": t, "cost": (t.cost() + curr["cost"] + self.get_tile_heuristics(t, goal))})
+                    tile_costs[t.position()] = t.cost() + curr["cost"] + self.get_tile_heuristics(t, goal)
+                elif t.cost() + curr["cost"] + self.get_tile_heuristics(t, goal) < tile_costs[t.position()]:
+                    node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
+                    node.parent = current_node
+                    tile_costs[t.position()] = t.cost() + curr["cost"] + self.get_tile_heuristics(t, goal)
             queue.sort(key=lambda key: key["cost"])
 
             if len(queue) == 0:

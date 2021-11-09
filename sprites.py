@@ -189,7 +189,7 @@ class Jocke(Agent):
         return path
 
     def get_neighbours_average_cost(self, game_map, current_tile):
-        neighbours = self.get_neighbours(current_tile.row, current_tile.col, game_map, [])
+        neighbours = self.get_neighbours(current_tile.row, current_tile.col, game_map, [current_tile])
         sum = 0
         for tile in neighbours:
             sum += tile.cost()
@@ -212,7 +212,7 @@ class Draza(Agent):
 
         current_neighbours = self.get_neighbours(row, col, game_map, visited)
         for t in current_neighbours:
-            Node(str(t.position()), parent=root)
+            Node(str(t.position()) + str(t.cost()), parent=root)
             queue.append({"tile": t, "cost": t.cost()})
         queue.sort(key=lambda key: key["cost"])
 
@@ -221,18 +221,27 @@ class Draza(Agent):
         final_node_cost = None
         while True:
             curr = queue.pop(0)
-            current_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
+            temp = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()) + str(curr["cost"]))
+            current_node = temp[0]
             row, col = curr["tile"].position()
 
             if row == goal[0] and col == goal[1]:
                 if final_node_cost is None or curr["cost"] < final_node_cost:
-                    final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
+                    final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()) + str(curr["cost"]))[0]
+                    final_node_cost = curr["cost"]
+                elif final_node_cost is None or curr["cost"] == final_node_cost and len(final_node.ancestors) > len(current_node.ancestors):
+                    final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()) + str(curr["cost"]))[0]
                     final_node_cost = curr["cost"]
 
             visited.append(game_map[row][col])
             current_neighbours = self.get_neighbours(row, col, game_map, visited)
             for t in current_neighbours:
-                Node(str(t.position()), parent=current_node)
+                if t.cost() + curr["cost"] == 6:
+                    print(t)
+                temp = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()) + str(curr["tile"].cost() + curr["cost"]))
+                if len(temp) > 0:
+                    print(temp)
+                Node(str(t.position()) + str(t.cost() + curr["cost"]), parent=current_node)
                 queue.append({"tile": t, "cost": (t.cost() + curr["cost"])})
             queue.sort(key=lambda key: key["cost"])
 

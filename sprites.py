@@ -177,13 +177,13 @@ class Jocke(Agent):
                 skip_first = False
                 continue
             temp = anc.name.split("/")
-            positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
-            tile = game_map[positions[0]][positions[1]]
+            temp = temp[len(temp) - 1].removeprefix("(").removesuffix(")").split(",")
+            tile = game_map[int(temp[0])][int(temp[1])]
             path.append(tile)
 
         temp = current_node.name.split("/")
-        positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
-        tile = game_map[positions[0]][positions[1]]
+        temp = temp[len(temp) - 1].removeprefix("(").removesuffix(")").split(",")
+        tile = game_map[int(temp[0])][int(temp[1])]
         path.append(tile)
 
         return path
@@ -256,13 +256,13 @@ class Draza(Agent):
                 skip_first = False
                 continue
             temp = anc.name.split("/")
-            positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
-            tile = game_map[positions[0]][positions[1]]
+            temp = temp[len(temp) - 1].removeprefix("(").removesuffix(")").split(",")
+            tile = game_map[int(temp[0])][int(temp[1])]
             path.append(tile)
 
         temp = final_node.name.split("/")
-        positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
-        tile = game_map[positions[0]][positions[1]]
+        temp = temp[len(temp) - 1].removeprefix("(").removesuffix(")").split(",")
+        tile = game_map[int(temp[0])][int(temp[1])]
         path.append(tile)
 
         return path
@@ -325,13 +325,13 @@ class Bole(Agent):
                 skip_first = False
                 continue
             temp = anc.name.split("/")
-            positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
-            tile = game_map[positions[0]][positions[1]]
+            temp = temp[len(temp) - 1].removeprefix("(").removesuffix(")").split(",")
+            tile = game_map[int(temp[0])][int(temp[1])]
             path.append(tile)
 
         temp = final_node.name.split("/")
-        positions = [int(s) for s in temp[len(temp) - 1] if s.isdigit()]
-        tile = game_map[positions[0]][positions[1]]
+        temp = temp[len(temp) - 1].removeprefix("(").removesuffix(")").split(",")
+        tile = game_map[int(temp[0])][int(temp[1])]
         path.append(tile)
 
         return path

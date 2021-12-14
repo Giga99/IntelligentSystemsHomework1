@@ -4,6 +4,7 @@ import config
 from collections import deque
 from anytree import Node, findall
 
+
 class BaseSprite(pygame.sprite.Sprite):
     images = dict()
 
@@ -228,7 +229,8 @@ class Draza(Agent):
                 if final_node_cost is None or curr["cost"] < final_node_cost:
                     final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
                     final_node_cost = curr["cost"]
-                elif final_node_cost is None or curr["cost"] == final_node_cost and len(final_node.ancestors) > len(current_node.ancestors):
+                elif final_node_cost is None or curr["cost"] == final_node_cost and len(final_node.ancestors) > len(
+                        current_node.ancestors):
                     final_node = findall(root, filter_=lambda node: node.name == str(curr["tile"].position()))[0]
                     final_node_cost = curr["cost"]
 

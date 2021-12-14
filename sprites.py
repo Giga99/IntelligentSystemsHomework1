@@ -2,9 +2,7 @@ import pygame
 import os
 import config
 from collections import deque
-from anytree import Node, findall, RenderTree
-import numpy as np
-
+from anytree import Node, findall
 
 class BaseSprite(pygame.sprite.Sprite):
     images = dict()
